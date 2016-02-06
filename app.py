@@ -30,7 +30,7 @@ import database
 import forms
 
 @app.route('/')
-def hello():
+def index():
 	return render_template('base.html')
 
 
@@ -40,12 +40,15 @@ def hello():
 ##############################################################################
 ##############################################################################
 
+
+### USER ####
+
 @app.route('/register_user', methods = ['GET', 'POST'])
 def register_user():
 	if 'session_username' in session:
 		return redirect('/')
-	form = forms.RegistrationForm(request.form)
-	if form.validate_on_submit() and request.method == 'POST':
+	registration_form = forms.RegistrationForm(request.form)
+	if registration_form.validate_on_submit() and request.method == 'POST':
 		user_name = request.form['user_name']
 		if database.user_name_valid_for_registration(user_name):
 			user_registration = database.register_user(request.form)
@@ -64,7 +67,7 @@ def register_user():
 		# should actually be done with ajax call that checks valid username as user inputs text
 		# 
 	# GET
-	return render_template('register.html', form=form)
+	return render_template('register.html', form=registration_form)
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -87,6 +90,28 @@ def logout():
 	session.pop('session_username', None)
 	session.pop('session_user_id', None)
 	return redirect('/')
+
+
+### CONTACTS ###
+
+@app.route('/insert_contact', methods = ['GET', 'POST'])
+def insert_contact():
+	if not 'session_username' in session:
+		return redirect('/')
+	contact_form = forms.ContactForm(request.form)
+	if contact_form.validate_on_submit() and request.method == 'POST':
+		contact_insertion = database.insert_contact(request.form, session['session_user_id'])
+		if contact_insertion['created']:
+			return redirect('/all_contacts')
+	# GET
+	return render_template('contact.html', form=contact_form, header_text='Insert Contact', submit_text='Create')
+
+@app.route('/all_contacts')
+def all_contacts():
+	if not 'session_username' in session:
+		return redirect('/')
+	contacts = database.all_contacts(session['session_user_id'])
+	return render_template('contacts.html', contacts=contacts)
 
 
 ##############################################################################

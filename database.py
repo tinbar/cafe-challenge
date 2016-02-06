@@ -75,3 +75,32 @@ def authenticate_user_with_mobile_device_id(user_name, mobile_device_id):
 	if user:
 		return True
 	return False
+
+### CONTACT ###
+
+def insert_contact(form, user_id):
+	first_name = form['first_name']
+	last_name = form['last_name']
+	email = form['email']
+	phone_number = form['phone_number']
+	try:
+		contact = models.Contact(
+			first_name=first_name,
+			last_name=last_name,
+			email=email,
+			phone_number=phone_number,
+			is_google_contact=False,
+			user_id=user_id
+			)
+		db.session.add(contact)
+		db.session.commit()
+		return {'created' : True}
+	except:
+		{'created' : False}
+
+def insert_google_contacts(google_contacts, user_id):
+	pass
+
+def all_contacts(user_id):
+	contacts = models.Contact.query.filter_by(user_id=user_id)
+	return contacts
