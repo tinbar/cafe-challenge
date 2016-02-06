@@ -12,4 +12,4 @@ class RegistrationForm(Form):
 	password = PasswordField('password', [validators.Required()])
 	email = TextField('email', [validators.Required()])
 	first_name = TextField('first_name', [validators.Required()])
-	last_name = TextField('last_name')
+	last_name = TextField('last_name', [validators.Required()])

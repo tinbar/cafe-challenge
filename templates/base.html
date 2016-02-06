@@ -1,0 +1,40 @@
+<!doctype html>
+<html class="no-js" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Cafe Challenge</title>
+        <link rel="stylesheet" href="static/stylesheets/main.css">
+    </head>
+    <body>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                {% if session.session_username %}
+                    <ul class="nav navbar-nav">
+                        <li><a href="/">Contacts</a></li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/logout">Logout</a></li>
+                    </ul>
+                {% else %}
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/register_user">Register</a></li>
+                    </ul>
+                {% endif %}
+            </div>
+        </nav>
+        <div class="body-block">
+            <div class="container" align="center">
+                <div class="row">
+                    <div class="col-xs-8 col-xs-offset-2 col-sm-6 col-sm-offset-3">
+        	           {% block body %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="static/js/jquery-1.12.0.js"></script>
+        <script src="static/js/bootstrap-sprockets.js"></script>
+        <script src="static/js/bootstrap.min.js"></script>
+        <script src="static/js/app.js"></script>
+    </body>
+</html>
