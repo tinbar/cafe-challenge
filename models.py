@@ -25,6 +25,7 @@ class Contact(db.Model):
     last_name = db.Column(db.String())
     email = db.Column(db.String())
     phone_number = db.Column(db.String())
+    is_google_contact = db.Column(db.Boolean)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
