@@ -98,9 +98,31 @@ def insert_contact(form, user_id):
 	except:
 		{'created' : False}
 
+def update_contact(form):
+	contact = get_contact_with_id(form['contact_id'])
+	if contact:
+		for key in form.keys():
+			if getattr(contact, key, None):
+				setattr(contact, key, form[key])
+		db.session.commit()
+		return {'updated' : True}
+	return {'updated' : False}
+
+def delete_contact(contact_id):
+	contact = get_contact_with_id(contact_id)
+	if contact:
+		db.session.delete(contact)
+		db.session.commit()
+		return {'deleted' : True}
+	return {'deleted' : False}
+
 def insert_google_contacts(google_contacts, user_id):
 	pass
 
 def all_contacts(user_id):
 	contacts = models.Contact.query.filter_by(user_id=user_id)
 	return contacts
+
+def get_contact_with_id(contact_id):
+	contact = db.session.query(models.Contact).get(int(contact_id))
+	return contact

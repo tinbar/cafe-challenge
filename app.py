@@ -10,7 +10,9 @@ import os
 
 from flask import Flask, request, Response, render_template, flash, redirect, session, url_for, json, make_response, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
+#from flask.ext.api import status
 import sqlalchemy.exc
+import jsonpickle
 
 #########################
 # config app and database
@@ -91,26 +93,93 @@ def logout():
 	session.pop('session_user_id', None)
 	return redirect('/')
 
-
 ### CONTACTS ###
 
-@app.route('/insert_contact', methods = ['GET', 'POST'])
-def insert_contact():
+def get_contacts_json():
+	if not 'session_username' in session:
+		return {}
+	contacts_query = database.all_contacts(session['session_user_id'])
+	contacts = list(contacts_query.all())
+	casted = []
+	for contact in contacts:
+		current = {}
+		for k in contact.__table__.columns:
+			key = k.name
+			current[key] = str(getattr(contact, key))
+		casted.append(current)
+	return casted
+
+@app.route('/contacts')
+def get_contacts():
+	contacts_json = get_contacts_json()
+	response = make_response((jsonpickle.encode(contacts_json), 200))
+	response.mimetype = 'application/json'
+	return response
+
+@app.route('/contacts', methods = ['POST'])
+def create_contact():
 	if not 'session_username' in session:
 		return redirect('/')
 	contact_form = forms.ContactForm(request.form)
 	if contact_form.validate_on_submit() and request.method == 'POST':
 		contact_insertion = database.insert_contact(request.form, session['session_user_id'])
-		if contact_insertion['created']:
-			return redirect('/all_contacts')
-	# GET
-	return render_template('contact.html', form=contact_form, header_text='Insert Contact', submit_text='Create')
+		response = make_response((jsonpickle.encode(contact_insertion), 201))
+		response.mimetype = 'application/json'
+		return response
 
-@app.route('/all_contacts')
-def all_contacts():
+@app.route('/contacts', methods = ['PATCH'])
+def update_contact():
 	if not 'session_username' in session:
 		return redirect('/')
-	contacts = database.all_contacts(session['session_user_id'])
+	contact_form = forms.ContactForm(request.form)
+	print(contact_form)
+	if contact_form.validate():
+		contact_update = database.update_contact(request.form)
+		response = make_response((jsonpickle.encode(contact_update), 200))
+		response.mimetype = 'application/json'
+		return response
+	else:
+		print(contact_form.errors)
+
+@app.route('/contacts', methods = ['DELETE'])
+def delete_contact():
+	if not 'session_username' in session:
+		return redirect('/')
+	contact_id = request.form['contact_id']
+	contact_delete = database.delete_contact(contact_id)
+	response = make_response((jsonpickle.encode(contact_delete), 200))
+	response.mimetype = 'application/json'
+	return response
+
+@app.route('/contacts.html')
+def contacts_html():
+	if not 'session_username' in session:
+		return redirect('/')
+	# some id exists, meaning either create new or edit existing, don't just get all
+	if request.args.get("id") is not None:
+		request_id = request.args.get("id")
+		contact_form = forms.ContactForm(request.form)
+		# if it's new, just return the form
+		if str(request_id) == "new":
+			return render_template('contact.html', form=contact_form, header_text='Insert Contact', submit_text='Create', method='post')
+		# otherwise, try to get a contact model using the id
+		try:
+			id_num = int(request_id)
+			contact = database.get_contact_with_id(id_num)
+			# if no such contact, raise an error and the except will take care of the 404
+			if not contact:
+				raise 'No such contact'
+			contact_form.first_name.data = contact.first_name
+			contact_form.last_name.data = contact.last_name
+			contact_form.email.data = contact.email
+			contact_form.phone_number.data = contact.phone_number
+			return render_template('contact.html', form=contact_form, header_text='Edit Contact', submit_text='Update', contact_id=id_num, method='patch')
+		# if it fails, 404
+		except:
+			response = make_response(("", 404))
+			return response
+	# if it hasn't terminated by now, it means get all contacts
+	contacts = get_contacts_json()
 	return render_template('contacts.html', contacts=contacts)
 
 
