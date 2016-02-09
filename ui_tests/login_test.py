@@ -27,7 +27,12 @@ class LoginTest(unittest.TestCase):
         user_name_field.send_keys('jim')
         password_field.send_keys('jim')
         #password_field.send_keys(Keys.RETURN)
+        # Submit
         submit_button = driver.find_element_by_id('button-login')
+        submit_button.click()
+        # The logout element should now be present after a successful login
+        logout_button = driver.find_element_by_id('a-logout')
+        self.assertTrue(logout_button.is_displayed())
         #elem = driver.find_element_by_name("q")
         #elem.send_keys("pycon")
         #elem.send_keys(Keys.RETURN)

@@ -95,6 +95,7 @@ def logout():
 
 ### CONTACTS ###
 
+# Get the contacts from the database and prepare the collection
 def get_contacts_json():
 	if not 'session_username' in session:
 		return {}
@@ -109,6 +110,7 @@ def get_contacts_json():
 		casted.append(current)
 	return casted
 
+# GET : Read all contacts
 @app.route('/contacts')
 def get_contacts():
 	contacts_json = get_contacts_json()
@@ -116,6 +118,7 @@ def get_contacts():
 	response.mimetype = 'application/json'
 	return response
 
+# POST : Create a new contact
 @app.route('/contacts', methods = ['POST'])
 def create_contact():
 	if not 'session_username' in session:
@@ -127,6 +130,7 @@ def create_contact():
 		response.mimetype = 'application/json'
 		return response
 
+# PATCH : Edit/Update an existing contact
 @app.route('/contacts', methods = ['PATCH'])
 def update_contact():
 	if not 'session_username' in session:
@@ -141,6 +145,7 @@ def update_contact():
 	else:
 		print(contact_form.errors)
 
+# DELETE : Delete an existing contact
 @app.route('/contacts', methods = ['DELETE'])
 def delete_contact():
 	if not 'session_username' in session:
@@ -151,6 +156,7 @@ def delete_contact():
 	response.mimetype = 'application/json'
 	return response
 
+# HTML Page to handle routing to various end points
 @app.route('/contacts.html')
 def contacts_html():
 	if not 'session_username' in session:

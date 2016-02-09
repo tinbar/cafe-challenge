@@ -94,7 +94,7 @@ def insert_contact(form, user_id):
 			)
 		db.session.add(contact)
 		db.session.commit()
-		return {'created' : True}
+		return {'created' : True, 'contact_id' : contact.id}
 	except:
 		{'created' : False}
 
